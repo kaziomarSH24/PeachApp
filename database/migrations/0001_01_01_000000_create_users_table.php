@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
             $table->string('email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('avatar')->nullable();
@@ -36,10 +37,10 @@ return new class extends Migration
             $table->string('school')->nullable();
             $table->string('edu_lvl')->nullable();
             $table->string('religion')->nullable();
-            $table->enum('drink', ['yes', 'no', 'occasionally'])->nullable();
-            $table->enum('smoke', ['yes', 'no', 'occasionally'])->nullable();
-            $table->enum('smoke_weed',['yes', 'no', 'occasionally'])->nullable();
-            $table->enum('drugs', ['yes', 'no', 'occasionally'])->nullable();
+            $table->string('drink')->nullable();
+            $table->string('smoke')->nullable();
+            $table->string('smoke_weed')->nullable();
+            $table->string('drugs')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
