@@ -15,7 +15,12 @@ Route::namespace('App\Http\Controllers')->group(function () {
     Route::post('resent-otp', 'AuthController@resentOTP');
 
     //user info
-    Route::group(['middleware' => 'jwt.auth', 'prefix' => 'user'], function () {
+    Route::group([/*'middleware' => 'jwt.auth',*/ 'prefix' => 'user'], function () {
         Route::post('/store-user-info', 'UserController@storeUserInfo');
+
+        //profile
+        Route::get('/profile', 'UserController@getProfile');
+        Route::post('/store-profile', 'UserController@storeProfile');
+        Route::put('/update-profile', 'UserController@updateProfile');
     });
 });

@@ -67,10 +67,7 @@ class AuthController extends Controller
                     'message' => 'OTP has expired! Please request for a new OTP!',
                 ], 401);
             }
-            $user->email_verified_at = Carbon::now();
-            $user->otp = null;
-            $user->otp_expiry_at = null;
-            $user->save();
+
             // return $user;
             try {
                 if (!$token = JWTAuth::fromUser($user)) {
@@ -79,6 +76,11 @@ class AuthController extends Controller
             } catch (JWTException $e) {
                 return response()->json(['error' => 'Could not create token.'], 500);
             }
+
+            $user->email_verified_at = Carbon::now();
+            $user->otp = null;
+            $user->otp_expiry_at = null;
+            $user->save();
 
             return response()->json([
                 'success' => true,
