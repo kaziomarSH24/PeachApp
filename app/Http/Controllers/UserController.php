@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Profile;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
@@ -12,12 +13,12 @@ class UserController extends Controller
 {
     public function storeUserInfo(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'dob' => 'required|date',
             'is_notify' => 'nullable|boolean',
+            'address' => 'nullable|string',
             'lat' => 'nullable|numeric',
             'lng' => 'nullable|numeric',
             'gender' => 'nullable|json',
@@ -25,6 +26,8 @@ class UserController extends Controller
             'height' => 'nullable|integer',
             'passions' => 'nullable|array',
             'passions.*' => 'string',
+            'interests' => 'nullable|array',
+            'interests.*' => 'string',
             'ethinicity' => 'nullable|json',
             'have_children' => 'nullable|json',
             'home_town' => 'nullable|json',
@@ -56,6 +59,46 @@ class UserController extends Controller
             'message' => 'User info updated successfully',
             'data' => $user
         ], 200);
+    }
+
+    //get user profile info
+    public function getUserInfo()
+    {
+        $user = User::with('profile')->find(auth()->id());
+        $profileImg = json_decode($user->profile->images);
+        $user->profile->prompt = json_decode($user->profile->prompt);
+        //add image full url
+        $user->avatar = $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/'. $profileImg[0]);
+        $user->gender = json_decode($user->gender);
+        $user->passions = json_decode($user->passions);
+        $user->interests = json_decode($user->interests);
+        $user->ethinicity = json_decode($user->ethinicity);
+        $user->have_children = json_decode($user->have_children);
+        $user->home_town = json_decode($user->home_town);
+        $user->work_place = json_decode($user->work_place);
+        $user->job = json_decode($user->job);
+        $user->school = json_decode($user->school);
+        $user->edu_lvl = json_decode($user->edu_lvl);
+        $user->religion = json_decode($user->religion);
+        $user->drink = json_decode($user->drink);
+        $user->smoke = json_decode($user->smoke);
+        $user->smoke_weed = json_decode($user->smoke_weed);
+        $user->drugs = json_decode($user->drugs);
+
+        //add url in profile images
+        $imagesUrl = [];
+        foreach ($profileImg as $image) {
+            $imagesUrl[] = asset('storage/' . $image);
+        }
+        $user->profile->images = $imagesUrl;
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User info',
+            'data' => $user
+        ], 200);
+
     }
 
     /**
@@ -134,7 +177,7 @@ class UserController extends Controller
     {
         $user_id = auth()->id();
         $validator = Validator::make($request->all(), [
-            'images' => 'nullable|array|min:4|max:6',
+            'images' => 'nullable|array',
             'images.*' => 'image',
             'prompt' => 'nullable|array',
             'prompt.*' => 'string'
@@ -146,6 +189,13 @@ class UserController extends Controller
             ], 400);
         }
         $profile = Profile::where('user_id', $user_id)->first();
+
+        if (!$profile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Profile not found'
+            ], 404);
+        }
 
         $imagesFile = $request->file('images');
         if ($imagesFile) {

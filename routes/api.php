@@ -13,9 +13,11 @@ Route::namespace('App\Http\Controllers')->group(function () {
     Route::post('login', 'AuthController@login');
     Route::get('logout', 'AuthController@logout')->middleware('jwt.auth');
     Route::post('resent-otp', 'AuthController@resentOTP');
+    Route::put('update-password', 'AuthController@updatePassword')->middleware('jwt.auth');
 
     //user info
-    Route::group([/*'middleware' => 'jwt.auth',*/ 'prefix' => 'user'], function () {
+    Route::group(['middleware' => 'jwt.auth', 'prefix' => 'user'], function () {
+        Route::get('/get-user-info', 'UserController@getUserInfo');
         Route::post('/store-user-info', 'UserController@storeUserInfo');
 
         //profile

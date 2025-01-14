@@ -23,12 +23,14 @@ return new class extends Migration
             $table->timestamp('otp_expiry_at')->nullable();
             $table->string('dob')->comment('Date of Birth')->nullable();
             $table->boolean('is_notify')->default(true);
+            $table->string('address')->nullable();
             $table->decimal('lat', 10, 8)->nullable();
             $table->decimal('lng', 11, 8)->nullable();
             $table->string('gender')->nullable();
             $table->string('dating_with')->nullable();
             $table->integer('height')->comment('height in cm')->nullable();
             $table->string('passions')->nullable();
+            $table->string('interests')->nullable();
             $table->string('ethnicity')->nullable();
             $table->string('have_children')->nullable();
             $table->string('home_town')->nullable();

@@ -129,20 +129,6 @@ class AuthController extends Controller
 
 
     /**
-     * Response with Token
-     */
-    public function responseWithToken($token)
-    {
-        return response()->json([
-            'success' => true,
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => JWTAuth::factory()->getTTL() * 600000000,
-            'user' => Auth::user(),
-        ]);
-    }
-
-    /**
      * resend OTP // also using for forgot password
      */
     public function resentOTP(Request $request)
@@ -218,5 +204,49 @@ class AuthController extends Controller
                 'message' => 'OTP is required!',
             ], 401);
         }
+    }
+
+    //update password
+    public function updatePassword(Request $request)
+    {
+        try{
+            $validator = Validator::make($request->all(), [
+                'password' => 'required|string|confirmed|min:8',
+            ]);
+            if ($validator->fails()) {
+                return response()->json($validator->errors());
+            }
+
+            // return $request->all();
+
+            $user_id = auth()->id();
+            $user = User::find($user_id);
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Password updated successfully!',
+            ]);
+        }catch(\Exception $e){
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong!',
+            ]);
+        }
+    }
+
+    /**
+     * Response with Token
+     */
+    protected function responseWithToken($token)
+    {
+        return response()->json([
+            'success' => true,
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 600000000,
+            'user' => Auth::user(),
+        ]);
     }
 }
