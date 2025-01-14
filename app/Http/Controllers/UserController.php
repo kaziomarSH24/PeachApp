@@ -64,8 +64,7 @@ class UserController extends Controller
     //get profile images and prompt
     public function getProfile()
     {
-        // $user_id = auth()->id();
-        $user_id = 1;
+        $user_id = auth()->id();
         $profile = Profile::where('user_id', $user_id)->first();
 
         if (!$profile) {
@@ -118,7 +117,7 @@ class UserController extends Controller
 
         //store images and prompt in profile table
         $profile = new Profile();
-        $profile->user_id = 1;
+        $profile->user_id = auth()->id();
         $profile->images = json_encode($images);
         $profile->prompt = json_encode($request->prompt);
         $profile->save();
@@ -133,7 +132,7 @@ class UserController extends Controller
     //update profile images and prompt
     public function updateProfile(Request $request)
     {
-        $user_id = 1; //auth()->id();
+        $user_id = auth()->id();
         $validator = Validator::make($request->all(), [
             'images' => 'nullable|array|min:4|max:6',
             'images.*' => 'image',
@@ -149,25 +148,25 @@ class UserController extends Controller
         $profile = Profile::where('user_id', $user_id)->first();
 
         $imagesFile = $request->file('images');
-        if($imagesFile){
-        //remove old images
-        if ($profile && !empty($profile->images)) {
-            $oldImages = json_decode($profile->images, true);
-            foreach ($oldImages as $oldImage) {
-                if (Storage::disk('public')->exists($oldImage)) {
-                    Storage::disk('public')->delete($oldImage);
+        if ($imagesFile) {
+            //remove old images
+            if ($profile && !empty($profile->images)) {
+                $oldImages = json_decode($profile->images, true);
+                foreach ($oldImages as $oldImage) {
+                    if (Storage::disk('public')->exists($oldImage)) {
+                        Storage::disk('public')->delete($oldImage);
+                    }
                 }
             }
-        }
 
-        //images handling
+            //images handling
 
-        $images = [];
-        foreach ($imagesFile as $image) {
-            $path = $image->store('images/profile', 'public');
-            $images[] = $path;
-        }
-        $profile->images = json_encode($images);
+            $images = [];
+            foreach ($imagesFile as $image) {
+                $path = $image->store('images/profile', 'public');
+                $images[] = $path;
+            }
+            $profile->images = json_encode($images);
         }
 
         //store images and prompt in profile table
@@ -183,33 +182,33 @@ class UserController extends Controller
     }
 
     //delete profile images and prompt
-    // public function deleteProfile(Request $request)
-    // {
-    //     $user_id = 1; //auth()->id();
-    //     $profile = Profile::where('user_id', $user_id)->first();
+    public function deleteProfile(Request $request)
+    {
+        $user_id = auth()->id();
+        $profile = Profile::where('user_id', $user_id)->first();
 
-    //     if (!$profile) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Profile not found'
-    //         ], 404);
-    //     }
+        if (!$profile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Profile not found'
+            ], 404);
+        }
 
-    //     //remove old images
-    //     if (!empty($profile->images)) {
-    //         $oldImages = json_decode($profile->images, true);
-    //         foreach ($oldImages as $oldImage) {
-    //             if (Storage::disk('public')->exists($oldImage)) {
-    //                 Storage::disk('public')->delete($oldImage);
-    //             }
-    //         }
-    //     }
+        //remove old images
+        if (!empty($profile->images)) {
+            $oldImages = json_decode($profile->images, true);
+            foreach ($oldImages as $oldImage) {
+                if (Storage::disk('public')->exists($oldImage)) {
+                    Storage::disk('public')->delete($oldImage);
+                }
+            }
+        }
 
-    //     $profile->delete();
+        $profile->delete();
 
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Profile images and prompt deleted successfully'
-    //     ], 200);
-    // }
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile images and prompt deleted successfully'
+        ], 200);
+    }
 }
