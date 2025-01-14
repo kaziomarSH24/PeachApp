@@ -26,6 +26,8 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->decimal('lat', 10, 8)->nullable();
             $table->decimal('lng', 11, 8)->nullable();
+            $table->integer('max_distance')->default(100);
+            $table->string('age_range')->default('{"min_age":"18","max_age":"40"}');
             $table->string('gender')->nullable();
             $table->string('dating_with')->nullable();
             $table->integer('height')->comment('height in cm')->nullable();

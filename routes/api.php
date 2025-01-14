@@ -24,5 +24,9 @@ Route::namespace('App\Http\Controllers')->group(function () {
         Route::get('/profile', 'UserController@getProfile');
         Route::post('/store-profile', 'UserController@storeProfile');
         Route::put('/update-profile', 'UserController@updateProfile');
+
+        //home controller
+        Route::get('/get-nearby-users', 'HomeController@getNearbyUsers');
     });
 });
+

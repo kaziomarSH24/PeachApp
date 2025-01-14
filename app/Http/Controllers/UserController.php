@@ -21,6 +21,8 @@ class UserController extends Controller
             'address' => 'nullable|string',
             'lat' => 'nullable|numeric',
             'lng' => 'nullable|numeric',
+            'max_distance' => 'nullable|integer',
+            'age_range' => 'nullable|json',
             'gender' => 'nullable|json',
             'dating_with' => 'nullable|string',
             'height' => 'nullable|integer',
@@ -28,7 +30,7 @@ class UserController extends Controller
             'passions.*' => 'string',
             'interests' => 'nullable|array',
             'interests.*' => 'string',
-            'ethinicity' => 'nullable|json',
+            'ethnicity' => 'nullable|json',
             'have_children' => 'nullable|json',
             'home_town' => 'nullable|json',
             'work_place' => 'nullable|json',
@@ -261,4 +263,6 @@ class UserController extends Controller
             'message' => 'Profile images and prompt deleted successfully'
         ], 200);
     }
+
+
 }
