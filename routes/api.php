@@ -27,6 +27,10 @@ Route::namespace('App\Http\Controllers')->group(function () {
 
         //home controller
         Route::get('/get-nearby-users', 'HomeController@getNearbyUsers');
+
+        //match controller
+        Route::post('/handle-interaction', 'InteractionController@handleInteraction');
+        Route::get('/get-matches', 'InteractionController@getMatches');
     });
 });
 

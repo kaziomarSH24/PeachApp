@@ -81,4 +81,16 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Profile::class);
     }
 
+    public function matching()
+    {
+        return $this->hasMany(Matching::class);
+    }
+    
+
+    public function blockedUsers()
+    {
+        return $this->hasMany(Blocked::class);
+    }
+
+
 }
