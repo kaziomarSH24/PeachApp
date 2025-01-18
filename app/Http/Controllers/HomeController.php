@@ -67,14 +67,14 @@ class HomeController extends Controller
         $user->smoke_weed = json_decode($user->smoke_weed);
         $user->drugs = json_decode($user->drugs);
 
+        $user->avatar =  asset('storage/' . $user->avatar);
+
         $profile = $user->profile;
         if($profile){
             $user->profile->images = collect(json_decode($user->profile->images))->map(function ($image) {
                 return asset('storage/' . $image);// Convert to full URL
             });
             $user->profile->prompt = json_decode($user->profile->prompt);
-
-        $user->avatar = $profile->getAvatar();
         }
 
         return $user;

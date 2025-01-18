@@ -89,9 +89,6 @@ class InteractionController extends Controller
     $matches = Matching::where('user_id', $userId)
         ->where('status', 'matched')
         ->with([
-            'matchedUser.profile' => function ($query) {
-                $query->select('id', 'user_id', 'images');
-            },
             'matchedUser' => function ($query) {
                 $query->select('id', 'first_name', 'last_name', 'avatar');
             }
@@ -100,24 +97,14 @@ class InteractionController extends Controller
 
     $matches->getCollection()->transform(function ($match) {
         $matchedUser = $match->matchedUser;
-
-        $profile = $matchedUser->profile ?? null;
-
-        if($profile){
-            $avatar = $profile->getAvatar();
-            $matchedUser->setAttribute('avatar', $avatar);
-        }
-        $matchedUser->makeHidden('profile');
-
-        return [
-            'matched_user' => $matchedUser,
-        ];
+        $matchedUser->avatar = asset('storage/' . $matchedUser->avatar);
+        return $matchedUser;
     });
 
     // Return response
     return response()->json([
         'success' => true,
-        'data' => $matches
+        'matches' => $matches
     ]);
 }
 

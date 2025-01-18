@@ -51,7 +51,7 @@ class ConversationController extends Controller
             return [
                 'id' => $conversation->id,
                 'name' => $firstName . ' ' . $lastName,
-                'avatar' => $conversation->user->avatar ? asset('storage/'. $conversation->user->avatar) : ($conversation->user->profile ? $conversation->user->profile->getAvatar() : null),
+                'avatar' => asset('storage/'. $conversation->user->avatar),
                 'is_status' => $conversation->user->is_active,
                 'unread_messages' => $conversation->unread_messages,
                 'latest_message' => [
@@ -184,7 +184,7 @@ class ConversationController extends Controller
         $messages = $conversation->getMessages($perPage);
 
         $messages->transform(function ($message) {
-            //avatar
+            
             $message->is_sender = $message->sender_id == auth()->id();
             $message->media = $message->media ? asset('storage/'. $message->media) : null;
             $message->created_at_formatted = Carbon::parse($message->created_at)->format('H:i');
