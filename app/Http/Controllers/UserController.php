@@ -69,8 +69,7 @@ class UserController extends Controller
         $user = User::with('profile')->find(auth()->id());
         $profileImg = json_decode($user->profile->images);
         $user->profile->prompt = json_decode($user->profile->prompt);
-        //add image full url
-        $user->avatar = $user->avatar ? asset('storage/' . $user->avatar) : asset('storage/'. $profileImg[0]);
+        $user->avatar = asset('storage/' . $user->avatar);
         $user->gender = json_decode($user->gender);
         $user->passions = json_decode($user->passions);
         $user->interests = json_decode($user->interests);
@@ -100,7 +99,6 @@ class UserController extends Controller
             'message' => 'User info',
             'data' => $user
         ], 200);
-
     }
 
     /**
@@ -158,6 +156,14 @@ class UserController extends Controller
         foreach ($imagesFile as $image) {
             $path = $image->store('images/profile', 'public');
             $images[] = $path;
+        }
+
+        //store avatar in user table
+        $user = auth()->user();
+        if ($user->avatar == null) {
+            $avatarImg = $imagesFile[0];
+            $user->avatar = $avatarImg->store('images/avatars', 'public');
+            $user->save();
         }
 
         //store images and prompt in profile table
@@ -263,6 +269,4 @@ class UserController extends Controller
             'message' => 'Profile images and prompt deleted successfully'
         ], 200);
     }
-
-
 }

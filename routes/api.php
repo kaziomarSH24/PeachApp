@@ -13,7 +13,7 @@ Route::namespace('App\Http\Controllers')->group(function () {
     Route::post('login', 'AuthController@login');
     Route::get('logout', 'AuthController@logout')->middleware('jwt.auth');
     Route::post('resent-otp', 'AuthController@resentOTP');
-    Route::put('update-password', 'AuthController@updatePassword')->middleware('jwt.auth');
+    // Route::put('update-password', 'AuthController@updatePassword')->middleware('jwt.auth');
 
     //user info
     Route::group(['middleware' => 'jwt.auth', 'prefix' => 'user'], function () {
@@ -37,6 +37,12 @@ Route::namespace('App\Http\Controllers')->group(function () {
         Route::post('/send-message', 'ConversationController@sendMessage');
         Route::put('/mark-as-read/{conversationId}', 'ConversationController@markAsRead');
         Route::get('/get-messages/{conversationId}', 'ConversationController@getMessages');
+
+        //settings controller
+        Route::post('/settings', 'SettingsController@settings');
+        Route::get('/get-settings', 'SettingsController@getSettings');
+        Route::put('/update-avatar', 'SettingsController@updateAvatar');
+        Route::put('/update-password', 'SettingsController@updatePassword');
 
     });
 });
