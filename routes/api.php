@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -45,5 +46,23 @@ Route::namespace('App\Http\Controllers')->group(function () {
         Route::put('/update-password', 'SettingsController@updatePassword');
 
     });
+
+
 });
 
+ //socket user status update api
+ Route::post('/update-status', function (Request $request) {
+    $user = User::find($request->userId);
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found.'
+        ], 404);
+    }
+    $user->is_active = $request->is_active;
+    $user->save();
+    return response()->json([
+        'success' => true,
+        'message' => 'User status updated successfully.'
+    ]);
+});

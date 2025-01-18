@@ -51,6 +51,8 @@ class SettingsController extends Controller
         ]);
     }
 
+    
+
     //update avatar
     public function updateAvatar(Request $request)
     {
