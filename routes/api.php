@@ -31,6 +31,13 @@ Route::namespace('App\Http\Controllers')->group(function () {
         //match controller
         Route::post('/handle-interaction', 'InteractionController@handleInteraction');
         Route::get('/get-matches', 'InteractionController@getMatches');
+
+        //conversation controller
+        Route::get('/get-contact', 'ConversationController@getContact');
+        Route::post('/send-message', 'ConversationController@sendMessage');
+        Route::put('/mark-as-read/{conversationId}', 'ConversationController@markAsRead');
+        Route::get('/get-messages/{conversationId}', 'ConversationController@getMessages');
+
     });
 });
 
