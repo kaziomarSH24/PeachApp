@@ -33,6 +33,11 @@ Route::namespace('App\Http\Controllers')->group(function () {
         Route::post('/handle-interaction', 'InteractionController@handleInteraction');
         Route::get('/get-matches', 'InteractionController@getMatches');
 
+        //blocked controller
+        Route::get('/blocked-user', 'BlockedController@getBlockedUsers');
+        Route::post('/blocked-user', 'BlockedController@blockedUser');
+        Route::post('/unblocked-user', 'BlockedController@unBlocked');
+
         //conversation controller
         Route::get('/get-contact', 'ConversationController@getContact');
         Route::post('/send-message', 'ConversationController@sendMessage');

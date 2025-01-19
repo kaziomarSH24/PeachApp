@@ -89,7 +89,12 @@ class User extends Authenticatable implements JWTSubject
 
     public function blockedUsers()
     {
-        return $this->hasMany(Blocked::class);
+        return $this->hasMany(Blocked::class, 'user_id', 'id');
+    }
+
+    public function blockedBy()
+    {
+        return $this->hasMany(Blocked::class, 'blocked_user_id', 'id');
     }
 
     public function conversations()
