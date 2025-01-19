@@ -36,6 +36,7 @@ class HomeController extends Controller
             )
             ->having('distance', '<', $max_distance)
             ->where('id', '!=', auth()->id())
+            ->where('status', 'active')
             ->whereBetween('dob', [$minDob, $maxDob]);
 
 

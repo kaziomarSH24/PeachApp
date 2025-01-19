@@ -122,6 +122,12 @@ class AuthController extends Controller
                     'message' => 'Please verify your email address!',
                 ]);
             }
+            if ($user->status == 'blocked') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your account is blocked!',
+                ]);
+            }
         }
 
         return $this->responseWithToken($token);

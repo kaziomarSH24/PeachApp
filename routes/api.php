@@ -53,6 +53,16 @@ Route::namespace('App\Http\Controllers')->group(function () {
     });
 
 
+    //admin controller
+    Route::group([/*'middleware' => 'jwt.auth',*/ 'prefix' => 'admin'], function () {
+        Route::get('/dashboard', 'Admin\DashboardController@dashboard');
+        Route::get('/users', 'Admin\DashboardController@users');
+        Route::get('/user/{id}', 'Admin\DashboardController@user');
+        Route::put('/update-user-status/{id}', 'Admin\DashboardController@updateUserStatus');
+        Route::delete('/delete-user/{id}', 'Admin\DashboardController@deleteUser');
+    });
+
+
 });
 
  //socket user status update api

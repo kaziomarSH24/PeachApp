@@ -13,6 +13,14 @@ class UserController extends Controller
 {
     public function storeUserInfo(Request $request)
     {
+        $user = auth()->user();
+        //check status
+        if ($user->status == 'blocked') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account is blocked. Please contact admin.'
+            ], 403);
+        }
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string',
             'last_name' => 'required|string',
@@ -50,7 +58,7 @@ class UserController extends Controller
             ], 400);
         }
 
-        $user = auth()->user();
+
         $user->update($validator->validated());
 
         $user->avatar = $user->avatar ? url($user->avatar) : null;
@@ -67,6 +75,13 @@ class UserController extends Controller
     public function getUserInfo()
     {
         $user = User::with('profile')->find(auth()->id());
+        //check status
+        if ($user->status == 'blocked') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account is blocked. Please contact admin.'
+            ], 403);
+        }
         $profileImg = json_decode($user->profile->images);
         $user->profile->prompt = json_decode($user->profile->prompt);
         $user->avatar = asset('storage/' . $user->avatar);
