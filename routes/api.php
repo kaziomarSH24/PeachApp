@@ -60,6 +60,16 @@ Route::namespace('App\Http\Controllers')->group(function () {
         Route::get('/user/{id}', 'Admin\DashboardController@user');
         Route::put('/update-user-status/{id}', 'Admin\DashboardController@updateUserStatus');
         Route::delete('/delete-user/{id}', 'Admin\DashboardController@deleteUser');
+
+        //faq controller
+        Route::get('/faqs', 'Admin\FAQController@faqs');
+        Route::post('/faqs/store', 'Admin\FAQController@store');
+        Route::put('/faqs/update/{id}', 'Admin\FAQController@update');
+        Route::delete('/faqs/delete/{id}', 'Admin\FAQController@delete');
+
+        //terms and conditions controller
+        Route::get('/terms-and-conditions', 'Admin\TremsAndConditionController@termsAndConditions');
+        Route::post('/terms-and-conditions/store', 'Admin\TremsAndConditionController@store');
     });
 
 
