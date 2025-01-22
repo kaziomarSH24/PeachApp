@@ -82,13 +82,16 @@ class UserController extends Controller
                 'message' => 'Your account is blocked. Please contact admin.'
             ], 403);
         }
-        $profileImg = json_decode($user->profile->images);
-        $user->profile->prompt = json_decode($user->profile->prompt);
+        $profileImg = $user->profile ? json_decode($user->profile->images) : [];
+        if ($user->profile) {
+            $user->profile->prompt = json_decode($user->profile->prompt);
+        }
         $user->avatar = asset('storage/' . $user->avatar);
         $user->gender = json_decode($user->gender);
+        $user->age_range = json_decode($user->age_range);
         $user->passions = json_decode($user->passions);
         $user->interests = json_decode($user->interests);
-        $user->ethinicity = json_decode($user->ethinicity);
+        $user->ethnicity = json_decode($user->ethnicity);
         $user->have_children = json_decode($user->have_children);
         $user->home_town = json_decode($user->home_town);
         $user->work_place = json_decode($user->work_place);
@@ -106,7 +109,9 @@ class UserController extends Controller
         foreach ($profileImg as $image) {
             $imagesUrl[] = asset('storage/' . $image);
         }
-        $user->profile->images = $imagesUrl;
+        if($user->profile){
+            $user->profile->images = $imagesUrl;
+        }
 
 
         return response()->json([

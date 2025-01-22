@@ -54,7 +54,7 @@ Route::namespace('App\Http\Controllers')->group(function () {
 
 
     //admin controller
-    Route::group([/*'middleware' => 'jwt.auth',*/ 'prefix' => 'admin'], function () {
+    Route::group(['middleware' => ['jwt.auth','admin'], 'prefix' => 'admin'], function () {
         Route::get('/dashboard', 'Admin\DashboardController@dashboard');
         Route::get('/users', 'Admin\DashboardController@users');
         Route::get('/user/{id}', 'Admin\DashboardController@user');
@@ -70,9 +70,11 @@ Route::namespace('App\Http\Controllers')->group(function () {
         //terms and conditions controller
         Route::get('/terms-and-conditions', 'Admin\TremsAndConditionController@termsAndConditions');
         Route::post('/terms-and-conditions/store', 'Admin\TremsAndConditionController@store');
+
+        //admin controller
+        Route::get('/admin-information', 'Admin\AdminController@getAdminProfile');
+        Route::post('/admin-information/update', 'Admin\AdminController@updateAdmin');
     });
-
-
 });
 
  //socket user status update api
