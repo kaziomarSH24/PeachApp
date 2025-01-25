@@ -50,6 +50,7 @@ class HomeController extends Controller
 
         $users = $users->orderBy('distance')->paginate($perPage);
 
+
         $users->getCollection()->transform(function ($user) use ($unit) {
             $user->makeHidden('email_verified_at', 'password', 'otp', 'otp_expiry_at', 'remember_token', 'created_at', 'updated_at', 'dating_with', 'is_notify', 'max_distance', 'age_range');
             if ($user->profile) {

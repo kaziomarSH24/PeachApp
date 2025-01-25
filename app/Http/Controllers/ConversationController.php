@@ -172,7 +172,7 @@ class ConversationController extends Controller
         ]);
     }
 
-    
+
 
     /**
      * Get all Messages in a Conversation.
@@ -185,7 +185,7 @@ class ConversationController extends Controller
         $messages = $conversation->getMessages($perPage);
 
         $messages->transform(function ($message) {
-            
+
             $message->is_sender = $message->sender_id == auth()->id();
             $message->media = $message->media ? asset('storage/'. $message->media) : null;
             $message->created_at_formatted = Carbon::parse($message->created_at)->format('H:i');

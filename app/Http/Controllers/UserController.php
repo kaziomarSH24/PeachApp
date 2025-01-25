@@ -86,7 +86,7 @@ class UserController extends Controller
         if ($user->profile) {
             $user->profile->prompt = json_decode($user->profile->prompt);
         }
-        $user->avatar = asset('storage/' . $user->avatar);
+        $user->avatar = $user->avatar ? asset('storage/' . $user->avatar) : null;
         $user->gender = json_decode($user->gender);
         $user->age_range = json_decode($user->age_range);
         $user->passions = json_decode($user->passions);
