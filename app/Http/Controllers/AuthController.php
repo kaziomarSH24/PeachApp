@@ -140,7 +140,7 @@ class AuthController extends Controller
     public function resentOTP(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
+            'email' => 'required|email',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors());
@@ -225,5 +225,58 @@ class AuthController extends Controller
             'expires_in' => JWTAuth::factory()->getTTL() * 600000000,
             'user' => Auth::user(),
         ]);
+    }
+
+    //check token
+    public function validateToken(Request $request)
+    {
+        try {
+            $token = $request->bearerToken();
+
+            if ($token) {
+                $user = JWTAuth::setToken($token)->authenticate();
+
+                if ($user) {
+                    return response()->json([
+                        'token_status' => true,
+                        'message'      => 'Token is valid.',
+                    ]);
+                } else {
+                    return response()->json([
+                        'token_status' => false,
+                        'message'      => 'Token is valid but user is not authenticated.',
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'token_status' => false,
+                'error'        => 'No token provided.',
+            ], 401);
+
+        } catch (JWTException $e) {
+            return response()->json([
+                'token_status' => false,
+                'error'        => 'Token is invalid or expired.',
+            ], 401);
+        }
+    }
+
+    /**
+     * Logout a User
+     */
+    public function logout(){
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+            return response()->json([
+                'success' => true,
+                'message' => 'User logged out successfully!',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong!',
+            ]);
+        }
     }
 }

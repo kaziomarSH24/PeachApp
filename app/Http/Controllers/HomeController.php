@@ -17,7 +17,7 @@ class HomeController extends Controller
         $dob = auth()->user()->dob;
         $ageRange = json_decode(auth()->user()->age_range);
 
-        $max_distance = auth()->user()->max_distance;
+        // $max_distance = auth()->user()->max_distance;
         $dating_with = auth()->user()->dating_with;
         $radius = $unit === 'M' ? 3958.8 : 6371;
 
@@ -27,14 +27,14 @@ class HomeController extends Controller
         $maxDob = now()->subYears($minAge)->format('Y-m-d');
 
 
-        $users = User::with('profile')
+        $users = User::with('profile', 'blockedBy')
             ->selectRaw(
                 "users.*,
             (? * acos( cos( radians(?) ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(?) ) + sin( radians(?) ) * sin( radians( lat ) ) ) ) AS distance,
             TIMESTAMPDIFF(YEAR, dob, CURDATE()) AS age", // Calculate user age
                 [$radius, $lat, $lng, $lat]
             )
-            ->having('distance', '<', $max_distance)
+            // ->having('distance', '<', $max_distance)
             ->where('id', '!=', auth()->id())
             ->where('status', 'active')
             ->whereBetween('dob', [$minDob, $maxDob]);
@@ -50,15 +50,15 @@ class HomeController extends Controller
 
         $users = $users->orderBy('distance')->paginate($perPage);
 
-
         $users->getCollection()->transform(function ($user) use ($unit) {
-            $user->makeHidden('email_verified_at', 'password', 'otp', 'otp_expiry_at', 'remember_token', 'created_at', 'updated_at', 'dating_with', 'is_notify', 'max_distance', 'age_range');
+            $user->makeHidden('email_verified_at', 'password', 'otp', 'otp_expiry_at', 'remember_token', 'created_at', 'updated_at', 'is_notify', 'max_distance', 'age_range','blockedBy');
             if ($user->profile) {
                 $user->profile->makeHidden('user_id', 'created_at', 'updated_at');
             }
             $user->distance = round($user->distance, 2);
             $user->unit = $unit === 'M' ? 'mi' : 'km';
             // $user->gender = json_decode($user->gender)->value;
+            $user->name = $user->first_name . ' ' . $user->last_name;
             $user->gender = json_decode($user->gender);
             $user->passions = json_decode($user->passions);
             $user->interests = json_decode($user->interests);
@@ -74,6 +74,7 @@ class HomeController extends Controller
             $user->smoke = json_decode($user->smoke);
             $user->smoke_weed = json_decode($user->smoke_weed);
             $user->drugs = json_decode($user->drugs);
+            $user->is_blocked = $user->blockedBy->count() > 0;
 
             $user->avatar =  asset('storage/' . $user->avatar);
 
@@ -91,6 +92,52 @@ class HomeController extends Controller
         return response()->json([
             'success' => true,
             'data' => $users,
+        ]);
+    }
+
+
+    public function userDetails($id)
+    {
+
+        $user = User::with('profile', 'blockedBy')
+            ->where('id', $id)
+            ->where('status', 'active')
+            ->first();
+            $user->makeHidden('email_verified_at', 'password', 'otp', 'otp_expiry_at', 'remember_token', 'created_at', 'updated_at', 'is_notify', 'max_distance', 'age_range','blockedBy');
+            if ($user->profile) {
+                $user->profile->makeHidden('user_id', 'created_at', 'updated_at');
+            }
+                $user->name = $user->first_name . ' ' . $user->last_name;
+                $user->gender = json_decode($user->gender);
+                $user->passions = json_decode($user->passions);
+                $user->interests = json_decode($user->interests);
+                $user->ethnicity = json_decode($user->ethnicity);
+                $user->have_children = json_decode($user->have_children);
+                $user->home_town = json_decode($user->home_town);
+                $user->work_place = json_decode($user->work_place);
+                $user->job = json_decode($user->job);
+                $user->school = json_decode($user->school);
+                $user->edu_lvl = json_decode($user->edu_lvl);
+                $user->religion = json_decode($user->religion);
+                $user->drink = json_decode($user->drink);
+                $user->smoke = json_decode($user->smoke);
+                $user->smoke_weed = json_decode($user->smoke_weed);
+                $user->drugs = json_decode($user->drugs);
+                $user->is_blocked = $user->blockedBy->count() > 0;
+
+                $user->avatar =  asset('storage/' . $user->avatar);
+
+                $profile = $user->profile;
+                if ($profile) {
+                    $user->profile->images = collect(json_decode($user->profile->images))->map(function ($image) {
+                        return asset('storage/' . $image); // Convert to full URL
+                    });
+                    $user->profile->prompt = json_decode($user->profile->prompt);
+                }
+
+        return response()->json([
+            'success' => true,
+            'data' => $user,
         ]);
     }
 }

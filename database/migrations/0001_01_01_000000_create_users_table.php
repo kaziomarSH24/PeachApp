@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('age_range')->default('{"min_age":"18","max_age":"40"}');
             $table->string('gender')->nullable();
             $table->string('dating_with')->nullable();
-            $table->integer('height')->comment('height in cm')->nullable();
+            $table->string('height')->comment('height in cm')->nullable();
             $table->string('passions')->nullable();
             $table->string('interests')->nullable();
             $table->string('ethnicity')->nullable();

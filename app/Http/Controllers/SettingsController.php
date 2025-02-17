@@ -51,13 +51,13 @@ class SettingsController extends Controller
         ]);
     }
 
-    
+
 
     //update avatar
     public function updateAvatar(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
         if ($validator->fails()) {

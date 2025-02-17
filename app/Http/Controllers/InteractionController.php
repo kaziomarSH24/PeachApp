@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Conversation;
 use App\Models\Matching;
+use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\InteractionNotification;
 use Illuminate\Http\Request;
@@ -72,40 +74,61 @@ class InteractionController extends Controller
     {
         $user = User::find($userId);
         $matchedUser = User::find($matchedUserId);
+        $userPreferences = Setting::where('user_id', $matchedUserId)->first();
+        if(!$userPreferences){
+            $userPreferences['is_app_notify'] = 1;
+            $userPreferences['is_email_notify'] = 0;
+            $userPreferences['is_push_notify'] = 0;
+            $userPreferences = (object) $userPreferences;
+        }
+
+        // dd($userPreferences->is_app_notify);
+
         if ($status === 'matched') {
             // Notify both users
-            $user->notify(new InteractionNotification($matchedUser, $status));
-            $matchedUser->notify(new InteractionNotification($user, $status));
+            $user->notify(new InteractionNotification($matchedUser, $status, $userPreferences));
+            $matchedUser->notify(new InteractionNotification($user, $status, $userPreferences));
         } else {
             // Notify the user
-            $user->notify(new InteractionNotification($matchedUser, $status));
+            $user->notify(new InteractionNotification($matchedUser, $status, $userPreferences));
         }
     }
 
-    public function getMatches()
-{
-    $userId = auth()->id();
+    public function getMatches(Request $request)
+    {
+        $userId = auth()->id();
 
-    $matches = Matching::where('user_id', $userId)
-        ->where('status', 'matched')
-        ->with([
-            'matchedUser' => function ($query) {
-                $query->select('id', 'first_name', 'last_name', 'avatar');
-            }
-        ])
-        ->paginate(10);
+        $conversationUserIds = Conversation::where('user_one_id', $userId)
+            ->orWhere('user_two_id', $userId)
+            ->pluck('user_one_id', 'user_two_id')
+            ->toArray();
+        $conversationUserIds = array_unique(array_merge(array_keys($conversationUserIds), array_values($conversationUserIds)));
+        sort($conversationUserIds);
 
-    $matches->getCollection()->transform(function ($match) {
-        $matchedUser = $match->matchedUser;
-        $matchedUser->avatar = asset('storage/' . $matchedUser->avatar);
-        return $matchedUser;
-    });
 
-    // Return response
-    return response()->json([
-        'success' => true,
-        'matches' => $matches
-    ]);
-}
+        $matches = Matching::where('user_id', $userId)
+            ->where('status', 'matched')
+            ->whereHas('matchedUser', function ($query) use ($conversationUserIds) {
+                $query->whereNotIn('matched_user_id', $conversationUserIds);
+            })
+            ->with([
+                'matchedUser' => function ($query) {
+                    $query->select('id', 'first_name', 'last_name', 'avatar', 'is_active');
+                }
+            ])
+            ->latest()
+            ->paginate($request->per_page ?? 10);
 
+        $matches->getCollection()->transform(function ($match) {
+            $matchedUser = $match->matchedUser;
+            $matchedUser->avatar = asset('storage/' . $matchedUser->avatar);
+            return $matchedUser;
+        });
+
+        // Return response
+        return response()->json([
+            'success' => true,
+            'matches' => $matches
+        ]);
+    }
 }

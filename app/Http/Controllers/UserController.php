@@ -33,7 +33,7 @@ class UserController extends Controller
             'age_range' => 'nullable|json',
             'gender' => 'nullable|json',
             'dating_with' => 'nullable|string',
-            'height' => 'nullable|integer',
+            'height' => 'nullable|string',
             'passions' => 'nullable|array',
             'passions.*' => 'string',
             'interests' => 'nullable|array',
@@ -86,7 +86,8 @@ class UserController extends Controller
         if ($user->profile) {
             $user->profile->prompt = json_decode($user->profile->prompt);
         }
-        $user->avatar = $user->avatar ? asset('storage/' . $user->avatar) : null;
+        $user->name = $user->first_name . ' ' . $user->last_name;
+        $user->avatar = asset('storage/' . $user->avatar);
         $user->gender = json_decode($user->gender);
         $user->age_range = json_decode($user->age_range);
         $user->passions = json_decode($user->passions);
@@ -128,7 +129,7 @@ class UserController extends Controller
     public function getProfile()
     {
         $user_id = auth()->id();
-        $profile = Profile::where('user_id', $user_id)->first();
+        $profile = Profile::where('user_id', $user_id)->latest()->first();
 
         if (!$profile) {
             return response()->json([

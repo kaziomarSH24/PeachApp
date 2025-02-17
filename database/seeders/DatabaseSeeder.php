@@ -17,13 +17,22 @@ class DatabaseSeeder extends Seeder
         User::create([
             'first_name' => 'Admin',
             'last_name' => 'User',
-            'email' => 'admin@example.com',
+            'email' => 'admin@gmail.com',
             'email_verified_at' => now(),
             'role' => 'admin',
-            'password' => 'password',
+            'password' => '12345678',
+        ]);
+        User::create([
+            'first_name' => 'Normal',
+            'last_name' => 'User',
+            'email' => 'user@gmail.com',
+            'email_verified_at' => now(),
+            'role' => 'admin',
+            'password' => '12345678',
         ]);
 
         $this->call(UserSeeder::class);
+        $this->call(ProfileSeeder::class);
 
 
     }

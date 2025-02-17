@@ -50,9 +50,11 @@ class ConversationController extends Controller
             $lastMessageDate = Carbon::parse($conversation->latest_message->created_at);
             return [
                 'id' => $conversation->id,
+                'user_id' => auth()->id(),
+                'receiver_id' => $conversation->userOne->id === auth()->id() ? $conversation->userTwo->id : $conversation->userOne->id,
                 'name' => $firstName . ' ' . $lastName,
                 'avatar' => asset('storage/'. $conversation->user->avatar),
-                'is_status' => $conversation->user->is_active,
+                'is_active' => $conversation->user->is_active,
                 'unread_messages' => $conversation->unread_messages,
                 'latest_message' => [
                     'message' => $mediaType == 'text' ? $conversation->latest_message->message : ($mediaType == 'image' ? (auth()->id() == $conversation->latest_message->sender_id ? "You sent a photo" : $firstName . " sent a photo") : ($mediaType == 'video' ? (auth()->id() == $conversation->latest_message->sender_id ? "You sent a video" : $firstName . " sent a video") : ($mediaType == 'audio' ? (auth()->id() == $conversation->latest_message->sender_id ? "You sent an audio" : $firstName . " sent an audio") : $conversation->latest_message->message))),
@@ -80,7 +82,8 @@ class ConversationController extends Controller
         $validator = Validator::make($request->all(), [
             'receiver_id' => 'required|exists:users,id',
             'message' => 'nullable',
-            'media' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,mp3,wav,ogg,avi,flv,webm|max:20480',
+            // 'media' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,mp3,wav,ogg,avi,flv,webm|max:20480',
+            'media' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,mp3,wav,ogg,avi,flv,webm,pdf,doc,docx,xls,xlsx,ppt,pptx|max:20480',
             // 'media_type' => 'nullable|in:text,image,video,audio',
         ]);
 
@@ -131,10 +134,12 @@ class ConversationController extends Controller
                 $mediaType = 'video';
             } elseif (in_array($extension, ['mp3', 'wav', 'ogg'])) {
                 $mediaType = 'audio';
+            }elseif (in_array($extension, ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'])) {
+                $mediaType = 'document';
             }
             $mediaPath = $request->file('media')->store('messages/media', 'public');
         }
-
+        $mediaUrl = $mediaPath ? asset('storage/'. $mediaPath) : null;
         // Save the message
         $message = Message::create([
             'conversation_id' => $conversation->id,
@@ -146,9 +151,33 @@ class ConversationController extends Controller
             'status' => 'sent',
         ]);
 
+        $message->media = $mediaUrl;
+        $message->created_at_formatted = Carbon::parse($message->created_at)->format('H:i');
+        $message->created_at_date = Carbon::parse($message->created_at)->format('d M Y');
+
+
+        //notification data;
+        $data = [
+            'message' => $message->sender->first_name . ' sent you a'. ($message->media_type == 'text' ? ' message' : ($message->media_type == 'image' ? ' photo' : ($message->media_type == 'video' ? ' video' : ($message->media_type == 'audio' ? ' audio' : ' document')))),
+            'avatar' => $message->sender->avatar ? asset('storage/'. $message->sender->avatar) : null,
+            'conversation_id' => $conversation->id,
+            'sender_id' => $sender,
+            'receiver_id' => $receiver,
+            'created_at' => $message->created_at,
+        ];
+
+        $message->makehidden('sender');
         // Notify the receiver (if applicable)
         $receiverUser = User::find($receiver);
-        // $receiverUser->notify(new \App\Notifications\MessageReceived($message));
+        $userPreferences = $receiverUser->settings;
+        if(!$userPreferences){
+            $userPreferences['is_app_notify'] = 1;
+            $userPreferences['is_email_notify'] = 0;
+            $userPreferences['is_push_notify'] = 0;
+            $userPreferences = (object) $userPreferences;
+        }
+
+        $receiverUser->notify(new \App\Notifications\MessageNotification($data , $userPreferences));
 
         return response()->json([
             'success' => true,
@@ -160,9 +189,9 @@ class ConversationController extends Controller
     /**
      * Mark a Message as Read.
      */
-    public function markAsRead($conversationId)
+    public function markAsRead(Request $request)
     {
-        $conversation = Conversation::findOrFail($conversationId);
+        $conversation = Conversation::findOrFail($request->conversation_id);
 
         $conversation->markMessagesAsRead(auth()->id());
 
@@ -189,6 +218,7 @@ class ConversationController extends Controller
             $message->is_sender = $message->sender_id == auth()->id();
             $message->media = $message->media ? asset('storage/'. $message->media) : null;
             $message->created_at_formatted = Carbon::parse($message->created_at)->format('H:i');
+            $message->created_at_date = Carbon::parse($message->created_at)->format('d M Y');
             return $message;
         });
 

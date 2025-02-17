@@ -39,7 +39,9 @@ class Conversation extends Model
             'receiver' => function ($query) {
                 $query->select('id', 'first_name', 'last_name', 'email', 'avatar', 'is_active');
             }
-        ])->paginate($perPage);
+        ])
+        ->orderBy('created_at', 'desc')
+        ->paginate($perPage);
     }
 
 
