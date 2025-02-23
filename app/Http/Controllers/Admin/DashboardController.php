@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Blocked;
+use App\Models\Matching;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -12,6 +14,8 @@ class DashboardController extends Controller
     public function dashboard(Request $request)
     {
         $users = User::count();
+        $totalMatch = Matching::where('status', 'matched')->count();
+        $totalReport = Blocked::where('reason', '!=', null)->count();
         $currentYear = $request->year ?? Carbon::now()->year;
 
         $userStats = User::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
@@ -19,18 +23,30 @@ class DashboardController extends Controller
             ->groupBy('month')
             ->orderBy('month')
             ->get();
+        $totalMatchStats = Matching::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+            ->where('status', 'matched')
+            ->whereYear('created_at', $currentYear)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
 
-        $data = [];
+        $overview = [];
         for ($i = 1; $i <= 12; $i++) {
-            $data[] = [
+            $overview[] = [
                 'month' => date("F", mktime(0, 0, 0, $i, 10)),
-                'count' => $userStats->firstWhere('month', $i)->count ?? 0,
+                'user_count' => $userStats->firstWhere('month', $i)->count ?? 0,
+                'match_count' => $totalMatchStats->firstWhere('month', $i)->count ?? 0
             ];
         }
-
+        $data = [
+            'totalUsers' => $users,
+            'totalMatch' => $totalMatch,
+            'totalReport' => $totalReport,
+            'chart_data' => $overview,
+        ];
         return response()->json([
             'success' => true,
-            'totalUsers' => $users,
+            'message' => 'Data retrieve successfully',
             'data' => $data
         ]);
     }
@@ -39,13 +55,13 @@ class DashboardController extends Controller
     //
     public function users(Request $request)
     {
-        $query = User::select('id', 'first_name', 'last_name', 'email', 'role', 'status', 'address', 'created_at');
+        $query = User::select('id', 'first_name', 'last_name', 'avatar', 'email', 'role', 'status', 'address', 'created_at');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
-            $q->where('first_name', 'like', "%{$search}%")
-              ->orWhere('last_name', 'like', "%{$search}%")
-              ->orWhere('email', 'like', "%{$search}%");
+                $q->where('-', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -79,20 +95,20 @@ class DashboardController extends Controller
         try {
             $user = User::find($id);
 
-        if (!$user) {
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            $user->status = $request->status;
+            $user->save();
+
             return response()->json([
-                'success' => false,
-                'message' => 'User not found'
-            ], 404);
-        }
-
-        $user->status = $request->status;
-        $user->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'User updated successfully'
-        ]);
+                'success' => true,
+                'message' => 'User updated successfully'
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -106,19 +122,19 @@ class DashboardController extends Controller
         try {
             $user = User::find($id);
 
-        if (!$user) {
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            $user->delete();
+
             return response()->json([
-                'success' => false,
-                'message' => 'User not found'
-            ], 404);
-        }
-
-        $user->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'User deleted successfully'
-        ]);
+                'success' => true,
+                'message' => 'User deleted successfully'
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

@@ -68,6 +68,13 @@ class AuthController extends Controller
                 ], 401);
             }
 
+            if($user->status == 'blocked'){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your account is blocked by Admin!',
+                ]);
+            }
+
             // return $user;
             try {
                 if (!$token = JWTAuth::fromUser($user)) {

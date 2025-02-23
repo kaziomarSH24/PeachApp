@@ -6,6 +6,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class MessageNotification extends Notification
 {
@@ -56,6 +58,25 @@ class MessageNotification extends Notification
     //         ->action('View Message', url('/'))
     //         ->line('Thank you for using our application!');
     // }
+
+
+    /**
+     * Get the FCM representation of the notification.
+     *
+     * @return FcmMessage
+     */
+
+     public function toFcm(object $notifiable): FcmMessage
+     {
+         return FcmMessage::create()
+             ->setData($this->data)
+             ->setNotification(FcmNotification::create()
+                 ->setTitle('New Message')
+                 ->setBody($this->data['message'])
+                 ->setClickAction('FLUTTER_NOTIFICATION_CLICK')
+             )
+             ->setData($this->data);
+     }
 
     /**
      * Get the array representation of the notification.

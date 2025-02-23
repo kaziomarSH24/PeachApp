@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Blocked;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -73,6 +74,74 @@ class AdminController extends Controller
                 'success' => true,
                 'message' => 'Admin profile fetched successfully!',
                 'user' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong! ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    //get all reports
+    public function getReports()
+    {
+        try {
+            $reports = Blocked::with(['user' => function ($query) {
+                $query->select('id', 'first_name', 'last_name', 'email', 'avatar');
+            }, 'blockedUser' => function ($query) {
+                $query->select('id', 'first_name', 'last_name', 'email', 'avatar',);
+            }])
+                ->latest()
+                ->paginate(10);
+                // return $reports;
+            if ($reports->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No reports found!',
+                ], 404);
+            }
+
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reports fetched successfully!',
+                'reports' => $reports
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong! ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+
+    //report details
+    public function reportDetails($id)
+    {
+        try {
+            $report = Blocked::find($id);
+            if (!$report) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Report not found!'
+                ], 404);
+            }
+
+            //reporter user
+            $report->user = $report->user()->select('id', 'first_name', 'last_name', 'email', 'avatar')->first();
+
+
+            //reported user
+            $report->reported_user = $report->blockedUser()->select('id', 'first_name', 'last_name', 'email', 'avatar')->first();
+
+
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Report details fetched successfully!',
+                'report' => $report
             ]);
         } catch (\Exception $e) {
             return response()->json([

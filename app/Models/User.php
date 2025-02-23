@@ -25,6 +25,7 @@ class User extends Authenticatable implements JWTSubject
     // ];
 
     protected $guarded = ['id'];
+    protected $appends = ['name'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -108,5 +109,16 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Setting::class);
     }
 
+    //avatar attribute
+    public function getAvatarAttribute($value)
+    {
+        return $value ? asset('storage/' . $value) : asset('img/default-avatar.jpg');
+    }
+
+    //full name attribute
+    public function getNameAttribute()
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
 
 }

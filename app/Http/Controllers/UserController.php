@@ -86,8 +86,8 @@ class UserController extends Controller
         if ($user->profile) {
             $user->profile->prompt = json_decode($user->profile->prompt);
         }
-        $user->name = $user->first_name . ' ' . $user->last_name;
-        $user->avatar = asset('storage/' . $user->avatar);
+        // $user->name = $user->first_name . ' ' . $user->last_name;
+        // $user->avatar = asset('storage/' . $user->avatar);
         $user->gender = json_decode($user->gender);
         $user->age_range = json_decode($user->age_range);
         $user->passions = json_decode($user->passions);
@@ -141,8 +141,10 @@ class UserController extends Controller
         $profile->images = json_decode($profile->images);
         //add image full url
         $imagesUrl = [];
-        foreach ($profile->images as $image) {
-            $imagesUrl[] = asset('storage/' . $image);
+        if (!empty($profile->images)) {
+            foreach ($profile->images as $image) {
+                $imagesUrl[] = asset('storage/' . $image);
+            }
         }
         $profile->images = $imagesUrl;
 
@@ -171,6 +173,7 @@ class UserController extends Controller
             ], 400);
         }
 
+
         //images handling
         $imagesFile = $request->file('images');
         $images = [];
@@ -186,12 +189,18 @@ class UserController extends Controller
             $user->avatar = $avatarImg->store('images/avatars', 'public');
             $user->save();
         }
-
+        // dd($user->profile);
         //store images and prompt in profile table
+        if($user->profile){
+            $profile = $user->profile;
+            $profile->images = json_encode($images);
+            $profile->prompt = $request->prompt ? json_encode($request->prompt) : $profile->prompt;
+        }else{
         $profile = new Profile();
         $profile->user_id = auth()->id();
         $profile->images = json_encode($images);
         $profile->prompt = json_encode($request->prompt);
+        }
         $profile->save();
 
         return response()->json([
@@ -205,18 +214,18 @@ class UserController extends Controller
     public function updateProfile(Request $request)
     {
         $user_id = auth()->id();
-        $validator = Validator::make($request->all(), [
-            'images' => 'nullable|array',
-            'images.*' => 'image',
-            'prompt' => 'nullable|array',
-            'prompt.*' => 'string'
-        ]);
+        // $validator = Validator::make($request->all(), [
+        //     'images' => 'required|array|min:4|max:6',
+        //     'images.*' => 'image',
+        //     'prompt' => 'nullable|array',
+        //     'prompt.*' => 'string'
+        // ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                $validator->errors()
-            ], 400);
-        }
+        // if ($validator->fails()) {
+        //     return response()->json([
+        //         $validator->errors()
+        //     ], 400);
+        // }
         $profile = Profile::where('user_id', $user_id)->first();
 
         if (!$profile) {

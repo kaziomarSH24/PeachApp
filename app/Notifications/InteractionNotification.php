@@ -84,6 +84,7 @@ class InteractionNotification extends Notification
             )
             ->setData([
                 'matched_user_id' => $this->interactionUser->id,
+                'avatar' => $this->interactionUser->avatar ? asset('storage/' . $this->interactionUser->avatar) : null,
                 'status' => $this->status
             ]);
     }

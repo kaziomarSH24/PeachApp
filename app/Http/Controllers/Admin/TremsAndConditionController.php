@@ -49,7 +49,7 @@ class TremsAndConditionController extends Controller
     public function termsAndConditions(Request $request)
     {
         try {
-            $termsAndConditions = TremAndCondition::all();
+            $termsAndConditions = TremAndCondition::findOrFail(1);
             return response()->json([
                 'status' => 'success',
                 'termsAndConditions' => $termsAndConditions

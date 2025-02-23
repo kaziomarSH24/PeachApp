@@ -29,7 +29,7 @@ Route::namespace('App\Http\Controllers')->group(function () {
         //profile
         Route::get('/profile', 'UserController@getProfile');
         Route::post('/store-profile', 'UserController@storeProfile');
-        Route::put('/update-profile', 'UserController@updateProfile');
+        Route::post('/update-profile', 'UserController@updateProfile');
 
         //home controller
         Route::get('/get-nearby-users', 'HomeController@getNearbyUsers');
@@ -66,6 +66,10 @@ Route::namespace('App\Http\Controllers')->group(function () {
         Route::get('/user/{id}', 'Admin\DashboardController@user');
         Route::put('/update-user-status/{id}', 'Admin\DashboardController@updateUserStatus');
         Route::delete('/delete-user/{id}', 'Admin\DashboardController@deleteUser');
+
+        //report details
+        Route::get('/report-details/{id}', 'Admin\AdminController@reportDetails');
+        Route::get('/get-reports', 'Admin\AdminController@getReports');
 
         //faq controller
         Route::get('/faqs', 'Admin\FAQController@faqs');

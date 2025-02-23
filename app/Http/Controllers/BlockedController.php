@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blocked;
+use App\Models\User;
+use App\Notifications\UserReportNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Termwind\Components\Raw;
@@ -28,6 +30,31 @@ class BlockedController extends Controller
                 ['user_id' => $user->id],
                 $validator->validated()
             );
+
+            if($request->reason != null){
+                //then send notification to the admin
+
+                $admin = User::where('role', 'admin')->first();
+                $userPreferences = $admin->settings()->first();
+                if(!$userPreferences){
+                    $userPreferences['is_app_notify'] = 1;
+                    $userPreferences['is_email_notify'] = 0;
+                    $userPreferences['is_push_notify'] = 0;
+                    $userPreferences = (object) $userPreferences;
+                }
+                $blockedUser = User::find($request->blocked_user_id);
+
+                $data = [
+                    'id' => $blockedUser->id,
+                    'user_id' => auth()->id(),
+                    'block_user_id' => $request->blocked_user_id,
+                    'message' => $user->first_name . ' has reported ' . $blockedUser->first_name,
+                    'reason' => $request->reason,
+                ];
+
+                $admin->notify(new UserReportNotification($data,$userPreferences ));
+
+            }
 
             return response()->json([
                 'success' => true,

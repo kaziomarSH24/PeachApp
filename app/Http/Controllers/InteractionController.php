@@ -90,7 +90,7 @@ class InteractionController extends Controller
             $matchedUser->notify(new InteractionNotification($user, $status, $userPreferences));
         } else {
             // Notify the user
-            $user->notify(new InteractionNotification($matchedUser, $status, $userPreferences));
+            $matchedUser->notify(new InteractionNotification($user, $status, $userPreferences));
         }
     }
 
