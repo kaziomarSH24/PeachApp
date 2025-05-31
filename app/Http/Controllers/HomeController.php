@@ -76,7 +76,7 @@ class HomeController extends Controller
             $user->drugs = json_decode($user->drugs);
             $user->is_blocked = $user->blockedBy->count() > 0;
 
-            $user->avatar =  asset('storage/' . $user->avatar);
+            // $user->avatar =  asset('storage/' . $user->avatar);
 
             $profile = $user->profile;
             if ($profile) {
@@ -125,7 +125,7 @@ class HomeController extends Controller
                 $user->drugs = json_decode($user->drugs);
                 $user->is_blocked = $user->blockedBy->count() > 0;
 
-                $user->avatar =  asset('storage/' . $user->avatar);
+                // $user->avatar =  asset('storage/' . $user->avatar);
 
                 $profile = $user->profile;
                 if ($profile) {
