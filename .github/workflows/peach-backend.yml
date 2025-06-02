@@ -1,0 +1,52 @@
+name: Peach App Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Backend Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            git config --global --add safe.directory ${{ secrets.EC2_APP_DIR }}
+            cd ${{ secrets.EC2_APP_DIR }}/backend
+            git reset --hard origin/main
+            git pull origin main
+            docker compose down
+            docker compose up -d --build
+
+            docker compose exec -T peach_app composer install --no-interaction --prefer-dist --optimize-autoloader
+            docker compose exec -T peach_app php artisan migrate --force
+            docker compose exec -T peach_app php artisan config:cache || true
+            docker compose exec -T peach_app php artisan optimize:clear || true
+            docker compose exec -T peach_app chmod -R 775 storage bootstrap/cache
+
+      - name: Frontend Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            git config --global --add safe.directory ${{ secrets.EC2_APP_DIR }}
+            cd ${{ secrets.EC2_APP_DIR }}/frontend
+            git reset --hard origin/main
+            git pull origin main
+            docker compose exec peach_node sh -c "cd /var/www/frontend && npm install && npm run build"
+
+            # Permission fix
+            docker compose exec -T peach_app chmod -R 775 /var/www/backend/public
