@@ -5,7 +5,7 @@ import { Server } from "socket.io";
 const app = express();
 const server = createServer(app);
 
-const baseUrl = "http://10.0.80.13:8001/api";
+const baseUrl = "/api";
 
 const io = new Server(server, {
     cors: {
