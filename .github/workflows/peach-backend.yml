@@ -49,4 +49,4 @@ jobs:
             docker compose exec peach_node sh -c "cd /var/www/frontend && npm install && npm run build"
 
             # Permission fix
-            docker compose exec -T peach_app chmod -R 775 /var/www/backend/public
+            docker compose exec -T peach_app chmod -R 775 /var/www/backend/public 
