@@ -23,7 +23,6 @@ jobs:
           script: |
             git config --global --add safe.directory ${{ secrets.EC2_APP_DIR }}
             cd ${{ secrets.EC2_APP_DIR }}/backend
-            # git reset --hard origin/main
             git stash push -m "before deploy"
             git pull origin main
             git stash pop || true
@@ -46,7 +45,6 @@ jobs:
           script: |
             git config --global --add safe.directory ${{ secrets.EC2_APP_DIR }}
             cd ${{ secrets.EC2_APP_DIR }}/frontend
-            # git reset --hard origin/main
             git stash push -m "before deploy"
             git pull origin main
             git stash pop || true
