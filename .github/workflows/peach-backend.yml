@@ -30,11 +30,11 @@ jobs:
             docker compose down
             docker compose up -d --build
 
-            docker compose exec -T peach_app composer install --no-interaction --prefer-dist --optimize-autoloader
-            docker compose exec -T peach_app php artisan migrate --force
-            docker compose exec -T peach_app php artisan config:cache || true
-            docker compose exec -T peach_app php artisan optimize:clear || true
-            docker compose exec -T peach_app chmod -R 775 storage bootstrap/cache
+            docker compose exec -T -u root peach_app composer install --no-interaction --prefer-dist --optimize-autoloader
+            docker compose exec -T -u root peach_app php artisan migrate --force
+            docker compose exec -T -u root peach_app php artisan config:cache || true
+            docker compose exec -T -u root peach_app php artisan optimize:clear || true
+            docker compose exec -T -u root peach_app chmod -R 775 storage bootstrap/cache
 
       - name: Frontend Deploy via SSH
         uses: appleboy/ssh-action@master
@@ -50,8 +50,8 @@ jobs:
             git stash push -m "before deploy"
             git pull origin main
             git stash pop || true
-            docker compose exec peach_node sh -c "cd /var/www/frontend && npm ci && npm run build"
+            docker compose exec -u root peach_node sh -c "cd /var/www/frontend && npm ci && npm run build"
 
             # Permission fix
-            docker compose exec -T peach_app chmod -R 775 /var/www/backend/public
+            docker compose exec -T -u root peach_app chmod -R 775 /var/www/backend/public
 
