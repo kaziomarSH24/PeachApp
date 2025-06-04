@@ -48,7 +48,7 @@ jobs:
             git stash push -m "before deploy"
             git pull origin main
             git stash pop || true
-            docker compose exec -u root peach_app sh -c "cd /var/www/frontend && npm ci && npm run build"
+            docker compose exec -u root peach_app sh -c "cd /var/www/frontend && npm ci && npm run build" 
 
             # Permission fix
             docker compose exec -T -u root peach_app chmod -R 775 /var/www/backend/public
