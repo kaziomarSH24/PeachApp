@@ -23,8 +23,10 @@ jobs:
           script: |
             git config --global --add safe.directory ${{ secrets.EC2_APP_DIR }}
             cd ${{ secrets.EC2_APP_DIR }}/backend
-            git reset --hard origin/main
+            # git reset --hard origin/main
+            git stash push -m "before deploy"
             git pull origin main
+            git stash pop || true
             docker compose down
             docker compose up -d --build
 
@@ -44,9 +46,12 @@ jobs:
           script: |
             git config --global --add safe.directory ${{ secrets.EC2_APP_DIR }}
             cd ${{ secrets.EC2_APP_DIR }}/frontend
-            git reset --hard origin/main
+            # git reset --hard origin/main
+            git stash push -m "before deploy"
             git pull origin main
-            docker compose exec peach_node sh -c "cd /var/www/frontend && npm install && npm run build"
+            git stash pop || true
+            docker compose exec peach_node sh -c "cd /var/www/frontend && npm ci && npm run build"
 
             # Permission fix
-            docker compose exec -T peach_app chmod -R 775 /var/www/backend/public 
+            docker compose exec -T peach_app chmod -R 775 /var/www/backend/public
+
